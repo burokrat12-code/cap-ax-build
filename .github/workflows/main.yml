@@ -10,14 +10,17 @@ jobs:
 
       - name: Download ImageBuilder
         run: |
-          wget https://downloads.openwrt.org/snapshots/targets/ipq60xx/generic/openwrt-imagebuilder-ipq60xx-generic.Linux-x86_64.tar.xz
+          # Автоматический поиск актуальной ссылки на ImageBuilder
+          URL=$(wget -qO- https://downloads.openwrt.org/snapshots/targets/ipq60xx/generic/ | grep -oE 'openwrt-imagebuilder-ipq60xx-generic\.Linux-x86_64\.tar\.xz' | head -n 1)
+          wget https://downloads.openwrt.org/snapshots/targets/ipq60xx/generic/$URL
           tar -xJf *.tar.xz
           mv openwrt-imagebuilder-* ib
 
       - name: Build Firmware
         run: |
           cd ib
-          make image PROFILE=mikrotik_cap-ax PACKAGES="luci luci-proto-modemmanager luci-app-modemmanager modemmanager kmod-usb-net-cdc-mbim kmod-usb-net-qmi-wwan kmod-usb-serial-quectel ath11k-firmware-ipq6018"
+          # Собираем образ. Мы добавили драйверы USB, LTE и Wi-Fi 6
+          make image PROFILE=mikrotik_cap-ax PACKAGES="luci luci-ssl luci-proto-modemmanager luci-app-modemmanager modemmanager kmod-usb-net-cdc-mbim kmod-usb-net-qmi-wwan kmod-usb-serial-quectel ath11k-firmware-ipq6018 kmod-usb-core kmod-usb3"
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
