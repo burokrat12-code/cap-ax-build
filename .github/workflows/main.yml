@@ -10,21 +10,24 @@ jobs:
 
       - name: Download ImageBuilder
         run: |
-          # Этот скрипт найдет правильный путь, даже если они опять сменят имя папки
+          # Заходим в корень и ищем нужную подпапку (обычно ipq60xx)
           BASE_URL="https://downloads.openwrt.org/snapshots/targets/qualcommax"
-          # Ищем папку, которая начинается на ipq60xx
-          SUB_DIR=$(wget -qO- $BASE_URL/ | grep -oE 'ipq60xx[_0-9a-z]*' | head -n 1)
-          # Формируем полную ссылку на ImageBuilder
-          IB_FILE=$(wget -qO- $BASE_URL/$SUB_DIR/ | grep -oE 'openwrt-imagebuilder-qualcommax-[a-zA-Z0-9_.]+\.tar\.xz' | head -n 1)
-          echo "Downloading from: $BASE_URL/$SUB_DIR/$IB_FILE"
-          wget $BASE_URL/$SUB_DIR/$IB_FILE
+          SUB_DIR=$(wget -qO- $BASE_URL/ | grep -oE 'ipq60xx[/_a-z0-9]*' | head -n 1 | tr -d '/')
+          
+          # Находим точное имя файла ImageBuilder в этой папке
+          IB_FILENAME=$(wget -qO- $BASE_URL/$SUB_DIR/ | grep -oE 'openwrt-imagebuilder-[^"> ]+\.tar\.xz' | head -n 1)
+          
+          echo "Full URL: $BASE_URL/$SUB_DIR/$IB_FILENAME"
+          
+          # Скачиваем и распаковываем
+          wget "$BASE_URL/$SUB_DIR/$IB_FILENAME"
           tar -xJf *.tar.xz
           mv openwrt-imagebuilder-* ib
 
       - name: Build Firmware
         run: |
           cd ib
-          # Собираем образ именно под cAP ax
+          # Сборка прошивки
           make image PROFILE=mikrotik_cap-ax PACKAGES="luci luci-ssl luci-proto-modemmanager luci-app-modemmanager modemmanager kmod-usb-net-cdc-mbim kmod-usb-net-qmi-wwan kmod-usb-serial-quectel ath11k-firmware-ipq6018 kmod-usb-core kmod-usb3"
 
       - name: Upload Artifacts
