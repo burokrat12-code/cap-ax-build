@@ -1,0 +1,26 @@
+name: Build cAP ax Firmware
+on: [workflow_dispatch]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install dependencies
+        run: sudo apt update && sudo apt install -y build-essential libncurses5-dev libssl-dev zlib1g-dev gawk wget git gettext python3 rsync unzip
+
+      - name: Download ImageBuilder
+        run: |
+          wget https://downloads.openwrt.org/snapshots/targets/ipq60xx/generic/openwrt-imagebuilder-ipq60xx-generic.Linux-x86_64.tar.xz
+          tar -xJf *.tar.xz
+          mv openwrt-imagebuilder-* ib
+
+      - name: Build Firmware
+        run: |
+          cd ib
+          make image PROFILE=mikrotik_cap-ax PACKAGES="luci luci-proto-modemmanager luci-app-modemmanager modemmanager kmod-usb-net-cdc-mbim kmod-usb-net-qmi-wwan kmod-usb-serial-quectel ath11k-firmware-ipq6018"
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: OpenWrt_cAP_ax
+          path: ib/bin/targets/ipq60xx/generic/*
