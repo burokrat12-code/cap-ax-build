@@ -10,19 +10,19 @@ jobs:
 
       - name: Download ImageBuilder
         run: |
-          # Прямая ссылка на сегодняшний файл
-          wget https://downloads.openwrt.org/snapshots/targets/qualcommax/ipq60xx/openwrt-imagebuilder-qualcommax-ipq60xx.Linux-x86_64.tar.xz
+          # Используем СТАБИЛЬНУЮ версию 23.05.5, она никуда не денется
+          wget https://downloads.openwrt.org/releases/23.05.5/targets/ipq60xx/generic/openwrt-imagebuilder-23.05.5-ipq60xx-generic.Linux-x86_64.tar.xz
           tar -xJf *.tar.xz
           mv openwrt-imagebuilder-* ib
 
       - name: Build Firmware
         run: |
           cd ib
-          # Сборка прошивки под твой cAP ax
+          # Сборка под cAP ax с поддержкой LTE модема
           make image PROFILE=mikrotik_cap-ax PACKAGES="luci luci-ssl luci-proto-modemmanager luci-app-modemmanager modemmanager kmod-usb-net-cdc-mbim kmod-usb-net-qmi-wwan kmod-usb-serial-quectel ath11k-firmware-ipq6018 kmod-usb-core kmod-usb3"
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: OpenWrt_cAP_ax
-          path: ib/bin/targets/qualcommax/ipq60xx/*
+          name: OpenWrt_cAP_ax_Stable
+          path: ib/bin/targets/ipq60xx/generic/*
