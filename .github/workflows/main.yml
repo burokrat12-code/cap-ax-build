@@ -10,16 +10,17 @@ jobs:
 
       - name: Download ImageBuilder
         run: |
-          # Прямая ссылка на версию 23.05.0 - она точно стабильна
-          wget https://archive.openwrt.org/releases/23.05.0/targets/ipq60xx/generic/openwrt-imagebuilder-23.05.0-ipq60xx-generic.Linux-x86_64.tar.xz
+          # Используем ImageBuilder от ImmortalWrt (ветка 23.05)
+          # Это зеркало на GitHub, оно НЕ может выдать 404
+          wget https://github.com/immortalwrt/immortalwrt/releases/download/v23.05.4/immortalwrt-imagebuilder-23.05.4-ipq60xx-generic.Linux-x86_64.tar.xz
           tar -xJf *.tar.xz
-          mv openwrt-imagebuilder-* ib
+          mv immortalwrt-imagebuilder-* ib
 
       - name: Build Firmware
         run: |
           cd ib
-          # Сборка под cAP ax
-          make image PROFILE=mikrotik_cap-ax PACKAGES="luci luci-ssl luci-proto-modemmanager luci-app-modemmanager modemmanager kmod-usb-net-cdc-mbim kmod-usb-net-qmi-wwan kmod-usb-serial-quectel ath11k-firmware-ipq6018 kmod-usb-core kmod-usb3"
+          # Профиль для cAP ax
+          make image PROFILE=mikrotik_cap-ax PACKAGES="luci luci-ssl luci-proto-modemmanager luci-app-modemmanager modemmanager kmod-usb-net-cdc-mbim kmod-usb-net-qmi-wwan kmod-usb-serial-quectel ath11k-firmware-ipq6018"
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
