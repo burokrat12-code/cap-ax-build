@@ -10,18 +10,17 @@ jobs:
 
       - name: Download ImageBuilder
         run: |
-          # Ищем актуальную ссылку на сервере ImmortalWrt через их индекс
-          DOWNLOAD_URL=$(wget -qO- https://downloads.immortalwrt.org/releases/23.05.4/targets/ipq60xx/generic/ | grep -oE 'immortalwrt-imagebuilder-[0-9a-z.-]+ipq60xx-generic\.Linux-x86_64\.tar\.xz' | head -n 1)
-          echo "Found: $DOWNLOAD_URL"
-          wget "https://downloads.immortalwrt.org/releases/23.05.4/targets/ipq60xx/generic/$DOWNLOAD_URL"
+          # Используем европейское зеркало, оно надежнее
+          URL="https://mirror0.one.com.tr/openwrt/releases/23.05.3/targets/ipq60xx/generic/openwrt-imagebuilder-23.05.3-ipq60xx-generic.Linux-x86_64.tar.xz"
+          wget $URL
           tar -xJf *.tar.xz
-          mv immortalwrt-imagebuilder-* ib
+          mv openwrt-imagebuilder-* ib
 
       - name: Build Firmware
         run: |
           cd ib
-          # Сборка под твой cAP ax
-          make image PROFILE=mikrotik_cap-ax PACKAGES="luci luci-ssl luci-proto-modemmanager luci-app-modemmanager modemmanager kmod-usb-net-cdc-mbim kmod-usb-net-qmi-wwan kmod-usb-serial-quectel ath11k-firmware-ipq6018"
+          # Сборка под cAP ax
+          make image PROFILE=mikrotik_cap-ax PACKAGES="luci luci-ssl luci-proto-modemmanager luci-app-modemmanager modemmanager kmod-usb-net-cdc-mbim kmod-usb-net-qmi-wwan kmod-usb-serial-quectel ath11k-firmware-ipq6018 kmod-usb-core kmod-usb3"
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
