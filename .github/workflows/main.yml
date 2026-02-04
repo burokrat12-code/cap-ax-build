@@ -10,12 +10,11 @@ jobs:
 
       - name: Download ImageBuilder
         run: |
-          # Автоматический поиск актуальной ссылки на ImageBuilder
-          URL=$(wget -qO- https://downloads.openwrt.org/snapshots/targets/ipq60xx/generic/ | grep -oE 'openwrt-imagebuilder-ipq60xx-generic\.Linux-x86_64\.tar\.xz' | head -n 1)
-          wget https://downloads.openwrt.org/snapshots/targets/ipq60xx/generic/$URL
+          # Используем путь к qualcommax, где сейчас лежит cAP ax
+          wget https://downloads.openwrt.org/snapshots/targets/qualcommax/ipq60xx/openwrt-imagebuilder-qualcommax-ipq60xx.Linux-x86_64.tar.xz
           tar -xJf *.tar.xz
           mv openwrt-imagebuilder-* ib
-
+          
       - name: Build Firmware
         run: |
           cd ib
@@ -26,4 +25,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: OpenWrt_cAP_ax
-          path: ib/bin/targets/ipq60xx/generic/*
+          path: ib/bin/targets/qualcommax/ipq60xx/*
