@@ -10,16 +10,17 @@ jobs:
 
       - name: Download ImageBuilder
         run: |
-          # Используем ImageBuilder от ImmortalWrt (ветка 23.05)
-          # Это зеркало на GitHub, оно НЕ может выдать 404
-          wget https://github.com/immortalwrt/immortalwrt/releases/download/v23.05.4/immortalwrt-imagebuilder-23.05.4-ipq60xx-generic.Linux-x86_64.tar.xz
+          # Ищем актуальную ссылку на сервере ImmortalWrt через их индекс
+          DOWNLOAD_URL=$(wget -qO- https://downloads.immortalwrt.org/releases/23.05.4/targets/ipq60xx/generic/ | grep -oE 'immortalwrt-imagebuilder-[0-9a-z.-]+ipq60xx-generic\.Linux-x86_64\.tar\.xz' | head -n 1)
+          echo "Found: $DOWNLOAD_URL"
+          wget "https://downloads.immortalwrt.org/releases/23.05.4/targets/ipq60xx/generic/$DOWNLOAD_URL"
           tar -xJf *.tar.xz
           mv immortalwrt-imagebuilder-* ib
 
       - name: Build Firmware
         run: |
           cd ib
-          # Профиль для cAP ax
+          # Сборка под твой cAP ax
           make image PROFILE=mikrotik_cap-ax PACKAGES="luci luci-ssl luci-proto-modemmanager luci-app-modemmanager modemmanager kmod-usb-net-cdc-mbim kmod-usb-net-qmi-wwan kmod-usb-serial-quectel ath11k-firmware-ipq6018"
 
       - name: Upload Artifacts
