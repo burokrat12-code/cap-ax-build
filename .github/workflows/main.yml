@@ -8,21 +8,37 @@ jobs:
       - name: Install dependencies
         run: sudo apt update && sudo apt install -y build-essential libncurses5-dev libssl-dev zlib1g-dev gawk wget git gettext python3 rsync unzip
 
-      - name: Download ImageBuilder
+      - name: Search and Download ImageBuilder
         run: |
-          # Версия 23.05.4 — проверена, она существует на сервере
-          wget https://downloads.openwrt.org/releases/23.05.4/targets/ipq60xx/generic/openwrt-imagebuilder-23.05.4-ipq60xx-generic.Linux-x86_64.tar.xz
-          tar -xJf *.tar.xz
-          mv openwrt-imagebuilder-* ib
+          # Список потенциальных мест, где может лежать конструктор
+          LOCATIONS=(
+            "https://downloads.openwrt.org/snapshots/targets/qualcommax/ipq60xx"
+            "https://downloads.openwrt.org/snapshots/targets/qualcommax/ipq60xx_64"
+            "https://downloads.openwrt.org/releases/23.05.3/targets/ipq60xx/generic"
+            "https://downloads.openwrt.org/releases/22.03.6/targets/ipq60xx/generic"
+          )
+          
+          for URL in "${LOCATIONS[@]}"; do
+            echo "Checking: $URL"
+            FILE=$(wget -qO- "$URL/" | grep -oE 'openwrt-imagebuilder-[0-9a-z.-]+ipq60xx[0-9a-z._-]*\.tar\.xz' | head -n 1)
+            if [ -n "$FILE" ]; then
+              echo "FOUND! Downloading $URL/$FILE"
+              wget "$URL/$FILE"
+              tar -xJf *.tar.xz
+              mv openwrt-imagebuilder-* ib
+              exit 0
+            fi
+          done
+          echo "No ImageBuilder found in any location!" && exit 1
 
       - name: Build Firmware
         run: |
           cd ib
-          # Сборка под cAP ax
+          # Если не находит mikrotik_cap-ax, он выведет список доступных
           make image PROFILE=mikrotik_cap-ax PACKAGES="luci luci-ssl luci-proto-modemmanager luci-app-modemmanager modemmanager kmod-usb-net-cdc-mbim kmod-usb-net-qmi-wwan kmod-usb-serial-quectel ath11k-firmware-ipq6018 kmod-usb-core kmod-usb3"
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: OpenWrt_cAP_ax_Stable
-          path: ib/bin/targets/ipq60xx/generic/*
+          name: OpenWrt_cAP_ax
+          path: ib/bin/targets/*/*/*
